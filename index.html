@@ -269,11 +269,22 @@
         <div class="gem">
           <div class="gemhead"><span class="g">✦ Ask Gemini</span>
             <button class="copy" data-copy="#geminiStart">Copy prompt</button></div>
-          <div class="gembody" id="geminiStart">You are helping a teacher build a simple classroom web tool. Create ONE self-contained index.html file — all HTML, CSS, and JavaScript in that single file, with no external libraries or links. The tool should: [describe your tool in one or two sentences]. It must work on a laptop and iPad, with large, touch-friendly buttons and text big enough to read from across a room. Show me the complete file in one code block. Whenever I ask for a change later, always reply with the entire updated file, not just the part that changed.</div>
+          <div class="gembody" id="geminiStart">You are helping a teacher build a simple classroom web tool. Create ONE self-contained index.html file — all HTML, CSS, and JavaScript in that single file, with no external libraries or links. The tool should: [describe your tool in one or two sentences]. It must work on a laptop and iPad, with large, touch-friendly buttons and text big enough to read from across a room. Give me the complete file in one plain code block I can copy or download — do not show a live preview. Whenever I ask for a change later, always reply with the entire updated file, not just the part that changed.</div>
         </div>
 
         <div class="note"><b>The golden rule with Gemini:</b> always ask for the <b>complete file</b>. You'll copy the
           whole thing into GitHub, so partial snippets won't help you.</div>
+
+        <div class="note"><b>Seeing a live web page instead of code?</b> That's Gemini <b>Canvas</b> showing a
+          <i>preview</i> of your tool — the code is fine, it's just hidden behind the preview. Two easy ways to grab it:
+          <ul style="margin:9px 0 0;padding-left:0;list-style:none;display:flex;flex-direction:column;gap:7px">
+            <li style="position:relative;padding-left:22px"><span style="position:absolute;left:0;color:var(--accent);font-weight:700">→</span>
+              In the Canvas panel, switch <b>Preview</b> to <b>Code</b> (the <code>&lt;/&gt;</code> icon), then click <b>Copy</b>.</li>
+            <li style="position:relative;padding-left:22px"><span style="position:absolute;left:0;color:var(--live);font-weight:700">→</span>
+              <b>Easier:</b> click <b>Download</b> to save <code>index.html</code>, then use GitHub's
+              <b>Upload files</b> (Step 4) — no copying at all.</li>
+          </ul>
+          What you copy or download is the correct, complete file even if the on-screen preview looked broken.</div>
 
         <p class="why" style="margin-top:20px">Ready-made code — the exact Student Picker in the demo above:</p>
         <div class="codewrap">
@@ -308,6 +319,7 @@
           <li>Name it exactly <span class="pill">index.html</span> (lowercase, with the dot).</li>
           <li>Paste in the code you copied in Step 2.</li>
           <li>Scroll down and click <b>Commit changes</b> (a "commit" just means "save this version").</li>
+          <li><b>Downloaded the file from Gemini instead?</b> Skip the pasting: use <b>Add file → Upload files</b> and drag your <code>index.html</code> in, then commit.</li>
         </ul>
         <div class="note"><b>Why that exact name?</b> GitHub automatically shows a file called <code>index.html</code>
           as the home page of your site.</div>
@@ -371,6 +383,13 @@
   <section class="block">
     <p class="kicker">If something looks wrong</p>
     <div class="trouble">
+      <div class="trow">
+        <div class="sym"><span class="dot"></span>Gemini shows a web page, not the code</div>
+        <p>That's Gemini <b>Canvas</b> previewing your tool. Switch the panel from <b>Preview</b> to <b>Code</b>
+          (the <code>&lt;/&gt;</code> icon) and click <b>Copy</b> — or click <b>Download</b> to save
+          <code>index.html</code> and upload that to your repo. The file is correct even when the preview looks off;
+          never retype it by hand.</p>
+      </div>
       <div class="trow">
         <div class="sym"><span class="dot"></span>Page shows "404" or "There isn't a GitHub Pages site here"</div>
         <p>It's usually just too soon — the first build is the slow one and can take several minutes. Give it
