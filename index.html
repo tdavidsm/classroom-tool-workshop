@@ -1,0 +1,554 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Classroom Tool Workshop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --bg:#f5f4ef; --surface:#ffffff; --surface-2:#efeee6; --screen:#0f1830;
+    --ink:#232a2f; --muted:#5c6670; --line:#e2dfd4;
+    --accent:#e4620e; --accent-soft:#fbe6d6; --live:#1f7a6b; --live-soft:#d9ede8;
+    --code-bg:#1b2128; --code-ink:#e9ecef; --code-dim:#8b98a5; --code-tok:#ffcf8a;
+    --display:"Bricolage Grotesque",system-ui,sans-serif;
+    --body:"IBM Plex Sans",system-ui,-apple-system,sans-serif;
+    --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+    --maxread:66ch;
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --bg:#14181b; --surface:#1b2125; --surface-2:#222a2f; --screen:#0d1426;
+      --ink:#eef1f2; --muted:#9aa7ad; --line:#2b343a;
+      --accent:#ff7a33; --accent-soft:#3a2415; --live:#46b39d; --live-soft:#12312b;
+      --code-bg:#10151a; --code-ink:#e9ecef; --code-dim:#7d8892; --code-tok:#ffcf8a;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#14181b; --surface:#1b2125; --surface-2:#222a2f; --screen:#0d1426;
+    --ink:#eef1f2; --muted:#9aa7ad; --line:#2b343a;
+    --accent:#ff7a33; --accent-soft:#3a2415; --live:#46b39d; --live-soft:#12312b;
+    --code-bg:#10151a; --code-ink:#e9ecef; --code-dim:#7d8892; --code-tok:#ffcf8a;
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);
+    font-size:17px;line-height:1.65;-webkit-font-smoothing:antialiased}
+  h1,h2,h3{font-family:var(--display);text-wrap:balance;line-height:1.1;margin:0}
+  p{margin:0}
+  a{color:var(--accent);text-underline-offset:3px}
+  code{font-family:var(--mono);font-size:0.86em}
+  .wrap{max-width:920px;margin:0 auto;padding:0 22px}
+  .read{max-width:var(--maxread)}
+
+  /* header */
+  header.bar{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 88%,transparent);
+    backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+  .bar .wrap{display:flex;align-items:center;gap:12px;padding-top:12px;padding-bottom:12px}
+  .mark{font-family:var(--display);font-weight:800;letter-spacing:-.01em;font-size:1.05rem}
+  .mark .rk{color:var(--accent)}
+  .bar .tag{font-family:var(--mono);font-size:.72rem;letter-spacing:.04em;text-transform:uppercase;
+    color:var(--muted);margin-left:auto}
+
+  /* hero */
+  .hero{padding:52px 0 30px}
+  .eyebrow{font-family:var(--mono);font-size:.74rem;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--accent);margin-bottom:14px}
+  .hero h1{font-size:clamp(2.1rem,5.4vw,3.3rem);font-weight:800;letter-spacing:-.02em}
+  .hero .lede{margin-top:16px;font-size:1.12rem;color:var(--muted)}
+  .hero .lede b{color:var(--ink);font-weight:600}
+  .herogrid{display:grid;grid-template-columns:1fr;gap:30px;align-items:start}
+  @media(min-width:820px){.herogrid{grid-template-columns:1.05fr .95fr;gap:40px}}
+
+  /* the demo "screen" — deliberately dark, it's a preview of the app */
+  .demo{background:var(--screen);border-radius:18px;padding:26px 22px 22px;
+    box-shadow:0 18px 40px -22px rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.06)}
+  .demo .dlabel{font-family:var(--mono);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;
+    color:#8aa0d6;display:flex;align-items:center;gap:8px;margin-bottom:18px}
+  .demo .dlabel::before{content:"";width:8px;height:8px;border-radius:50%;background:#ffd166;
+    box-shadow:0 0 0 4px rgba(255,209,102,.18)}
+  .demo h3{font-family:var(--body);font-weight:600;color:#eaf0ff;font-size:1.02rem;margin-bottom:2px}
+  .demo .sub{color:#9fb0d6;font-size:.85rem;margin-bottom:8px}
+  #pickName{font-family:var(--display);font-weight:800;color:#ffd166;text-align:center;
+    font-size:clamp(2.4rem,9vw,3.4rem);line-height:1.2;min-height:1.3em;padding:10px 0;
+    transition:transform .08s ease}
+  .demo .btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:4px}
+  .demo button{font-family:var(--body);font-weight:600;font-size:1rem;border:none;border-radius:12px;
+    padding:13px 20px;cursor:pointer;flex:1;min-width:120px}
+  #pickBtn{background:#ffd166;color:#1a1200}
+  #resetBtn{background:#1e2a4d;color:#dbe4ff}
+  .demo .roster{margin-top:14px;font-family:var(--mono);font-size:.76rem;color:#7f90bd;
+    display:flex;flex-wrap:wrap;gap:6px}
+  .demo .roster span{background:rgba(255,255,255,.05);padding:3px 8px;border-radius:6px}
+  .demo button:focus-visible{outline:3px solid #ffd166;outline-offset:2px}
+
+  .pieces{display:grid;grid-template-columns:1fr;gap:14px;margin:8px 0 6px}
+  @media(min-width:620px){.pieces{grid-template-columns:repeat(3,1fr)}}
+  .piece{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 16px 15px}
+  .piece .n{font-family:var(--mono);font-size:.72rem;color:var(--accent);letter-spacing:.08em}
+  .piece h3{font-family:var(--body);font-weight:600;font-size:1rem;margin:6px 0 4px}
+  .piece p{color:var(--muted);font-size:.92rem}
+
+  section.block{padding:30px 0;border-top:1px solid var(--line)}
+  .kicker{font-family:var(--mono);font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--muted);margin-bottom:18px}
+
+  /* steps */
+  .step{display:grid;grid-template-columns:auto 1fr;gap:18px;padding:22px 0}
+  .step + .step{border-top:1px dashed var(--line)}
+  .num{width:46px;height:46px;border-radius:12px;background:var(--accent);color:#fff;
+    font-family:var(--display);font-weight:800;font-size:1.35rem;display:flex;align-items:center;
+    justify-content:center;flex:none}
+  .step h3{font-size:1.32rem;font-weight:600;letter-spacing:-.01em;margin-bottom:4px}
+  .step .why{color:var(--muted);font-size:.95rem;margin:8px 0}
+  .step ul{margin:10px 0 0;padding-left:0;list-style:none;display:flex;flex-direction:column;gap:9px}
+  .step ul li{position:relative;padding-left:24px}
+  .step ul li::before{content:"→";position:absolute;left:0;color:var(--accent);font-weight:700}
+  .kbd{font-family:var(--mono);font-size:.82em;background:var(--surface-2);border:1px solid var(--line);
+    border-radius:6px;padding:2px 7px;white-space:nowrap}
+  .pill{display:inline-block;font-family:var(--mono);font-size:.82em;background:var(--surface-2);
+    border:1px solid var(--line);border-radius:6px;padding:1px 8px}
+
+  /* callouts */
+  .note{background:var(--surface-2);border-left:3px solid var(--accent);border-radius:0 10px 10px 0;
+    padding:12px 16px;font-size:.92rem;margin-top:14px}
+  .note.live{border-left-color:var(--live)}
+  .note b{font-weight:600}
+
+  /* url chip */
+  .urlbox{margin-top:14px;background:var(--surface);border:1px dashed var(--line);border-radius:12px;
+    padding:14px 16px;font-family:var(--mono);font-size:.95rem;overflow-x:auto}
+  .urlbox .ph{color:var(--accent);font-weight:500}
+
+  /* code block */
+  .codewrap{margin-top:16px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+  .codebar{display:flex;align-items:center;gap:10px;background:var(--surface-2);
+    padding:9px 14px;border-bottom:1px solid var(--line)}
+  .codebar .fname{font-family:var(--mono);font-size:.82rem;color:var(--muted)}
+  .codebar .fname b{color:var(--ink);font-weight:600}
+  .copy{margin-left:auto;font-family:var(--body);font-weight:600;font-size:.82rem;cursor:pointer;
+    border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;padding:6px 12px}
+  .copy:hover{border-color:var(--accent);color:var(--accent)}
+  pre{margin:0;overflow-x:auto;background:var(--code-bg)}
+  pre code{display:block;color:var(--code-ink);font-size:.8rem;line-height:1.6;padding:16px 18px;white-space:pre}
+
+  /* gemini prompt cards */
+  .gem{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-top:14px}
+  .gemhead{display:flex;align-items:center;gap:9px;padding:11px 16px;background:var(--accent-soft);
+    border-bottom:1px solid var(--line)}
+  .gemhead .g{font-family:var(--display);font-weight:800;font-size:.9rem;color:var(--accent)}
+  .gemhead .copy{background:transparent}
+  .gembody{padding:14px 16px;font-family:var(--mono);font-size:.86rem;line-height:1.6;color:var(--ink);
+    white-space:pre-wrap}
+  .promptlist{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+  .promptlist .row{display:flex;gap:10px;align-items:flex-start;background:var(--surface);
+    border:1px solid var(--line);border-radius:10px;padding:11px 13px}
+  .promptlist .row .q{font-family:var(--display);font-weight:800;color:var(--accent);flex:none}
+  .promptlist .row span.t{font-size:.92rem}
+
+  /* troubleshooting */
+  .trouble{display:flex;flex-direction:column;gap:12px;margin-top:6px}
+  .trow{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+  .trow .sym{font-weight:600;display:flex;align-items:center;gap:9px}
+  .dot{width:9px;height:9px;border-radius:50%;flex:none;background:var(--accent)}
+  .trow p{color:var(--muted);font-size:.93rem;margin-top:6px}
+
+  /* recap loop */
+  .loop{display:grid;grid-template-columns:1fr;gap:12px;margin-top:6px}
+  @media(min-width:680px){.loop{grid-template-columns:repeat(4,1fr)}}
+  .loopstep{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:15px;
+    position:relative}
+  .loopstep .ln{font-family:var(--mono);font-size:.7rem;color:var(--accent);letter-spacing:.08em}
+  .loopstep h4{font-family:var(--body);font-size:.98rem;margin:6px 0 3px}
+  .loopstep p{font-size:.86rem;color:var(--muted)}
+
+  footer{border-top:1px solid var(--line);padding:26px 0 46px;color:var(--muted);font-size:.9rem}
+  footer .read{max-width:60ch}
+
+  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);
+    background:var(--ink);color:var(--bg);font-weight:600;font-size:.9rem;padding:10px 18px;border-radius:10px;
+    opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:50}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+</head>
+<body>
+<header class="bar">
+  <div class="wrap">
+    <span class="mark">Ship&nbsp;It<span class="rk">.</span></span>
+    <span class="tag">GitHub&nbsp;+&nbsp;Gemini&nbsp;·&nbsp;no&nbsp;terminal</span>
+  </div>
+</header>
+
+<div class="wrap">
+  <section class="hero">
+    <p class="eyebrow">Teacher workshop · your first web tool</p>
+    <div class="herogrid">
+      <div>
+        <h1>Build a classroom tool and put it on the web.</h1>
+        <p class="lede read">By the end of this session you'll have a <b>real, shareable web address</b> —
+          something like <code>yourname.github.io/student-picker</code> — running a tool you built and can
+          change any time. No coding background needed. Your AI partner is <b>Gemini</b>; your free host is
+          <b>GitHub</b>. We'll build the picker on the right, then you'll make it your own.</p>
+        <div class="note">First time seeing any of this? Good. Follow the seven steps in order — each one is a
+          few clicks, and nothing you do can break anything permanently.</div>
+      </div>
+
+      <!-- live demo: the exact tool they will build -->
+      <div class="demo" aria-label="Live demo of the Random Student Picker">
+        <div class="dlabel">Live demo — the tool you'll build</div>
+        <h3>🎲 Random Student Picker</h3>
+        <p class="sub">Tap the button. No repeats until everyone's had a turn.</p>
+        <div id="pickName">Ready!</div>
+        <div class="btns">
+          <button id="pickBtn">Pick a student</button>
+          <button id="resetBtn">Reset</button>
+        </div>
+        <div class="roster" aria-hidden="true">
+          <span>Ada</span><span>Bao</span><span>Carlos</span><span>Dana</span><span>Eli</span><span>Fatima</span>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="wrap">
+  <section class="block" style="border-top:none;padding-top:8px">
+    <p class="kicker">The whole thing is just three pieces</p>
+    <div class="pieces">
+      <div class="piece">
+        <div class="n">PIECE 1</div>
+        <h3>GitHub</h3>
+        <p>A free account that both stores your file and hosts it as a live web page (GitHub Pages).</p>
+      </div>
+      <div class="piece">
+        <div class="n">PIECE 2</div>
+        <h3>One file</h3>
+        <p>The entire tool lives in a single file named <code>index.html</code> — no apps to install.</p>
+      </div>
+      <div class="piece">
+        <div class="n">PIECE 3</div>
+        <h3>Gemini</h3>
+        <p>You describe the tool in plain English; Gemini writes and updates that one file for you.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- STEPS -->
+  <section class="block">
+    <p class="kicker">Do these once, in order</p>
+
+    <div class="step">
+      <div class="num">1</div>
+      <div>
+        <h3>Create your GitHub account</h3>
+        <p class="why">This is your host. The free plan does everything you need.</p>
+        <ul>
+          <li>Go to <a href="https://github.com/signup">github.com/signup</a> and sign up with any email.</li>
+          <li>Pick a <b>username</b> carefully — it becomes part of every tool's address:
+            <span class="pill">username.github.io/…</span>. Short and clean is best (e.g. <span class="pill">msjones</span>).</li>
+          <li>Verify your email, and you're in. Skip any paid upgrade prompts.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="num">2</div>
+      <div>
+        <h3>Get the code for your tool</h3>
+        <p class="why">You need the contents of one <code>index.html</code> file. Two ways to get it.</p>
+        <ul>
+          <li><b>Fast path:</b> use the ready-made Student Picker below — copy it as-is and move on.</li>
+          <li><b>Your-own path:</b> ask Gemini to build it. Paste this starter prompt, then copy the file it gives back:</li>
+        </ul>
+
+        <div class="gem">
+          <div class="gemhead"><span class="g">✦ Ask Gemini</span>
+            <button class="copy" data-copy="#geminiStart">Copy prompt</button></div>
+          <div class="gembody" id="geminiStart">You are helping a teacher build a simple classroom web tool. Create ONE self-contained index.html file — all HTML, CSS, and JavaScript in that single file, with no external libraries or links. The tool should: [describe your tool in one or two sentences]. It must work on a laptop and iPad, with large, touch-friendly buttons and text big enough to read from across a room. Show me the complete file in one code block. Whenever I ask for a change later, always reply with the entire updated file, not just the part that changed.</div>
+        </div>
+
+        <div class="note"><b>The golden rule with Gemini:</b> always ask for the <b>complete file</b>. You'll copy the
+          whole thing into GitHub, so partial snippets won't help you.</div>
+
+        <p class="why" style="margin-top:20px">Ready-made code — the exact Student Picker in the demo above:</p>
+        <div class="codewrap">
+          <div class="codebar"><span class="fname"><b>index.html</b> · copy all of this</span>
+            <button class="copy" id="copyCode">Copy code</button></div>
+          <pre><code id="code">Loading the code…</code></pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="num">3</div>
+      <div>
+        <h3>Create a repository</h3>
+        <p class="why">A "repository" (or "repo") is just this project's folder, stored on GitHub.</p>
+        <ul>
+          <li>Click the <span class="pill">+</span> at the top-right of GitHub → <b>New repository</b>.</li>
+          <li><b>Repository name:</b> lowercase, no spaces — hyphens are fine. Try <span class="pill">student-picker</span>.</li>
+          <li>Set it to <b>Public</b>, tick <b>Add a README file</b>, then click <b>Create repository</b>.</li>
+        </ul>
+        <div class="note">The repo name becomes part of your web address, so name it like you'd name a link.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="num">4</div>
+      <div>
+        <h3>Add your <code>index.html</code> file</h3>
+        <p class="why">This puts your tool's code into the repo.</p>
+        <ul>
+          <li>In your repo, click <b>Add file</b> → <b>Create new file</b>.</li>
+          <li>Name it exactly <span class="pill">index.html</span> (lowercase, with the dot).</li>
+          <li>Paste in the code you copied in Step 2.</li>
+          <li>Scroll down and click <b>Commit changes</b> (a "commit" just means "save this version").</li>
+        </ul>
+        <div class="note"><b>Why that exact name?</b> GitHub automatically shows a file called <code>index.html</code>
+          as the home page of your site.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="num">5</div>
+      <div>
+        <h3>Turn on GitHub Pages</h3>
+        <p class="why">This is the switch that publishes your file to the web — for free.</p>
+        <ul>
+          <li>In your repo, open <b>Settings</b> (top menu) → <b>Pages</b> (left sidebar).</li>
+          <li>Under <b>Source</b>, choose <b>Deploy from a branch</b>.</li>
+          <li>Set the branch to <span class="pill">main</span> and the folder to <span class="pill">/ (root)</span>, then click <b>Save</b>.</li>
+          <li>The <b>first</b> build is the slow one — it can take several minutes (occasionally up to ~10). Every change after that goes live in about a minute.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="num">6</div>
+      <div>
+        <h3>Visit your live tool</h3>
+        <p class="why">Your tool now has a real address you can open, bookmark, and share.</p>
+        <div class="urlbox">https://<span class="ph">your-username</span>.github.io/<span class="ph">student-picker</span>/</div>
+        <ul>
+          <li>Open it on your own device first. Seeing a <b>404</b> right after Step 5? That's normal on a first deploy — give it a few minutes and refresh while it builds.</li>
+          <li>Drop the link into Google Classroom, a slide, or a QR code for students.</li>
+        </ul>
+        <div class="note live"><b>That's a real deployment.</b> The same seven steps host any single-file tool you
+          ever build — quiz timers, group makers, lab checklists, review games.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="num">7</div>
+      <div>
+        <h3>Make it your own (with Gemini)</h3>
+        <p class="why">The repeatable loop: change the file with Gemini, paste it back, commit, refresh.</p>
+        <ul>
+          <li>Paste your <b>current</b> <code>index.html</code> into Gemini and describe one change.</li>
+          <li>Ask for the <b>complete updated file</b>, then copy it.</li>
+          <li>In GitHub, open <code>index.html</code> → click the <b>pencil</b> ✏️ → select all, paste the new version → <b>Commit changes</b>.</li>
+          <li>Refresh your live link. If a change doesn't show, do a hard refresh: <span class="kbd">Ctrl/⌘ + Shift + R</span>.</li>
+        </ul>
+
+        <p class="why" style="margin-top:18px">Copy-ready change requests to paste into Gemini:</p>
+        <div class="promptlist">
+          <div class="row"><span class="q">✦</span><span class="t">"Replace the names with my class list, one per line: <b>[paste your students]</b>."</span></div>
+          <div class="row"><span class="q">✦</span><span class="t">"Change the colors to our school colors, navy and gold."</span></div>
+          <div class="row"><span class="q">✦</span><span class="t">"Make the picked name much bigger so it reads from the back of the room."</span></div>
+          <div class="row"><span class="q">✦</span><span class="t">"Add a short drum-roll sound when I press Pick."</span></div>
+          <div class="row"><span class="q">✦</span><span class="t">"Pick two students at once instead of one."</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TROUBLESHOOTING -->
+  <section class="block">
+    <p class="kicker">If something looks wrong</p>
+    <div class="trouble">
+      <div class="trow">
+        <div class="sym"><span class="dot"></span>Page shows "404" or "There isn't a GitHub Pages site here"</div>
+        <p>It's usually just too soon — the first build is the slow one and can take several minutes. Give it
+          time and refresh. Then check: the file is named exactly <code>index.html</code>, and Settings → Pages
+          shows a green "Your site is live at…".</p>
+      </div>
+      <div class="trow">
+        <div class="sym"><span class="dot"></span>Blank white page</div>
+        <p>The file was likely saved empty or with a different name. Open the repo, confirm <code>index.html</code>
+          has your code in it, and re-commit if needed.</p>
+      </div>
+      <div class="trow">
+        <div class="sym"><span class="dot"></span>My change isn't showing up</div>
+        <p>Your browser is showing a cached copy. Hard-refresh with <span class="kbd">Ctrl/⌘ + Shift + R</span>.
+          GitHub can also take a minute to rebuild after a commit.</p>
+      </div>
+      <div class="trow">
+        <div class="sym"><span class="dot" style="background:var(--live)"></span>Worried you'll break it</div>
+        <p>You won't — permanently. Every commit is a saved version. If a tool stops working, paste a version you
+          know worked back into <code>index.html</code> and commit again.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- RECAP -->
+  <section class="block">
+    <p class="kicker">The loop to remember</p>
+    <div class="loop">
+      <div class="loopstep"><div class="ln">STEP A</div><h4>Ask Gemini</h4><p>Describe one change; get the whole file back.</p></div>
+      <div class="loopstep"><div class="ln">STEP B</div><h4>Paste into GitHub</h4><p>Edit <code>index.html</code>, replace everything.</p></div>
+      <div class="loopstep"><div class="ln">STEP C</div><h4>Commit</h4><p>Save the new version.</p></div>
+      <div class="loopstep"><div class="ln">STEP D</div><h4>Refresh your link</h4><p>See it live. Repeat as often as you like.</p></div>
+    </div>
+  </section>
+</div>
+
+<footer>
+  <div class="wrap read">
+    Built for teachers, by a teacher. Everything here is free: a GitHub account, GitHub Pages hosting, and your
+    school's Gemini access. Keep every tool a single <code>index.html</code> and this same workflow carries you
+    from your first student picker to anything you can describe.
+  </div>
+</footer>
+
+<div class="toast" id="toast">Copied ✓</div>
+
+<!-- The Student Picker source, kept as one string so the code box and Copy button never drift.
+     Note: the file's own closing script tag is written as <\/script> so it doesn't end THIS script,
+     and the newline in split() is written \\n so the string keeps a literal \n. -->
+<script>
+(function(){
+  var PICKER = [
+'<!DOCTYPE html>',
+'<html lang="en">',
+'<head>',
+'  <meta charset="utf-8">',
+'  <meta name="viewport" content="width=device-width, initial-scale=1">',
+'  <title>Random Student Picker</title>',
+'  <style>',
+'    :root { --bg:#0f1830; --panel:#1e2a4d; --accent:#ffd166; --text:#eaf0ff; --muted:#9fb0d6; }',
+'    * { box-sizing:border-box; }',
+'    body { margin:0; min-height:100vh; font-family:system-ui,-apple-system,sans-serif;',
+'           background:var(--bg); color:var(--text);',
+'           display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px; }',
+'    h1 { font-size:1.5rem; margin:0 0 4px; }',
+'    p.sub { color:var(--muted); margin:0 0 22px; text-align:center; }',
+'    #name { font-size:clamp(2.5rem, 11vw, 5rem); font-weight:800; text-align:center;',
+'            min-height:1.4em; color:var(--accent); }',
+'    .row { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; }',
+'    button { font-size:1.15rem; font-weight:700; padding:16px 26px; border:none; border-radius:14px;',
+'             cursor:pointer; }',
+'    #pick { background:var(--accent); color:#1a1200; }',
+'    #reset { background:var(--panel); color:var(--text); }',
+'    textarea { width:min(90vw,420px); height:120px; margin-top:8px; border-radius:12px;',
+'               border:1px solid #2c3d6b; background:var(--panel); color:var(--text);',
+'               padding:12px; font-size:1rem; }',
+'    small { color:var(--muted); }',
+'  </style>',
+'</head>',
+'<body>',
+'  <h1>🎲 Random Student Picker</h1>',
+'  <p class="sub">One name at a time — no repeats until everyone has had a turn.</p>',
+'',
+'  <div id="name">Ready!</div>',
+'',
+'  <div class="row">',
+'    <button id="pick">Pick a student</button>',
+'    <button id="reset">Reset</button>',
+'  </div>',
+'',
+'  <p><small>Type your students below, one name per line:</small></p>',
+'  <textarea id="roster">Ada',
+'Bao',
+'Carlos',
+'Dana',
+'Eli',
+'Fatima</textarea>',
+'',
+'  <script>',
+'    // Read the names from the box (one per line, blanks ignored).',
+'    function names() {',
+'      return document.getElementById("roster").value',
+'        .split("\\n").map(function(n){ return n.trim(); }).filter(function(n){ return n.length; });',
+'    }',
+'',
+'    var remaining = [];   // names not yet picked this round',
+'',
+'    function pick() {',
+'      var all = names();',
+'      if (all.length === 0) { show("Add some names!"); return; }',
+'      if (remaining.length === 0) remaining = all.slice();   // start a fresh round',
+'      var i = Math.floor(Math.random() * remaining.length);',
+'      var chosen = remaining.splice(i, 1)[0];',
+'      spinTo(chosen, all);',
+'    }',
+'',
+'    // Flash random names, then land on the chosen one.',
+'    function spinTo(finalName, pool) {',
+'      var ticks = 12;',
+'      var timer = setInterval(function () {',
+'        show(pool[Math.floor(Math.random() * pool.length)]);',
+'        if (--ticks <= 0) { clearInterval(timer); show(finalName); }',
+'      }, 60);',
+'    }',
+'',
+'    function show(t) { document.getElementById("name").textContent = t; }',
+'    function reset() { remaining = []; show("Ready!"); }',
+'',
+'    document.getElementById("pick").addEventListener("click", pick);',
+'    document.getElementById("reset").addEventListener("click", reset);',
+'  <\/script>',
+'</body>',
+'</html>'
+  ].join('\n');
+
+  // Fill the code box (textContent escapes it safely for display).
+  try { document.getElementById('code').textContent = PICKER; } catch(e){}
+
+  // ---- copy helpers ----
+  var toast = document.getElementById('toast'), toastT;
+  function ping(){ toast.classList.add('show'); clearTimeout(toastT);
+    toastT = setTimeout(function(){ toast.classList.remove('show'); }, 1300); }
+  function copyText(txt){
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(txt).then(ping, fallback);
+    } else { fallback(); }
+    function fallback(){
+      var ta=document.createElement('textarea'); ta.value=txt; ta.style.position='fixed';
+      ta.style.opacity='0'; document.body.appendChild(ta); ta.select();
+      try{ document.execCommand('copy'); ping(); }catch(e){} document.body.removeChild(ta);
+    }
+  }
+  document.getElementById('copyCode').addEventListener('click', function(){ copyText(PICKER); });
+  Array.prototype.forEach.call(document.querySelectorAll('.copy[data-copy]'), function(btn){
+    btn.addEventListener('click', function(){
+      var el = document.querySelector(btn.getAttribute('data-copy'));
+      if(el) copyText(el.textContent.trim());
+    });
+  });
+
+  // ---- live demo (same behavior as the file above) ----
+  var ROSTER = ['Ada','Bao','Carlos','Dana','Eli','Fatima'];
+  var left = [], nameEl = document.getElementById('pickName');
+  function dShow(t){ nameEl.textContent = t; }
+  function dPick(){
+    if(left.length === 0) left = ROSTER.slice();
+    var i = Math.floor(Math.random()*left.length);
+    var chosen = left.splice(i,1)[0];
+    var ticks = 12;
+    var timer = setInterval(function(){
+      dShow(ROSTER[Math.floor(Math.random()*ROSTER.length)]);
+      if(--ticks <= 0){ clearInterval(timer); dShow(chosen);
+        nameEl.style.transform='scale(1.06)'; setTimeout(function(){ nameEl.style.transform='scale(1)'; },120); }
+    }, 55);
+  }
+  document.getElementById('pickBtn').addEventListener('click', dPick);
+  document.getElementById('resetBtn').addEventListener('click', function(){ left=[]; dShow('Ready!'); });
+})();
+</script>
+</body>
+</html>
